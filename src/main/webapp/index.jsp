@@ -1,5 +1,10 @@
+<%@ page pageEncoding="UTF-8" %>
 <html>
+<head>
+    <title>Hello</title>
+</head>
 <body>
-<h2>Hello World!</h2>
+<h1>Hello!</h1>
+<h2>當前時間：${currentTime}</h2>
 </body>
 </html>
