@@ -46,14 +46,14 @@ public class CustomerService {
      * @Date 2024/4/15
      * @return java.util.List<com.ztc.demo.chapter1.model.Customer>
      *
-    **/
-    public List<Customer> getCustomerList(){
-        Connection conn = null;
-        try {
+     **/
+    public List<Customer> getCustomerList() {
+//        Connection conn = null;
+//        try {
 //            List<Customer> customers = new ArrayList<>();
-            String sql = "select * from customer;";
-            conn = DatabaseHelper.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
+        String sql = "select * from customer;";
+//        conn = DatabaseHelper.getConnection();
+//            PreparedStatement ps = conn.prepareStatement(sql);
 //            ResultSet rs = ps.executeQuery();
 //            while (rs.next()) {
 //                Customer customer = new Customer();
@@ -65,12 +65,12 @@ public class CustomerService {
 //                customer.setRemark(rs.getString("remark"));
 //                customers.add(customer);
 //            }
-            List<Customer> customers = DatabaseHelper.queryEntityList(conn, Customer.class, sql);
-            return customers;
-        } catch (Exception e) {
-            LOGGER.error("execute sql failure",e);
-            return null;
-        } finally {
+        List<Customer> customers = DatabaseHelper.queryEntityList( Customer.class, sql);
+        return customers;
+//        } catch (Exception e) {
+//            LOGGER.error("execute sql failure",e);
+//            return null;
+//        } finally {
 //            if (!Objects.isNull(conn)) {
 //                try {
 //                    conn.close();
@@ -78,8 +78,8 @@ public class CustomerService {
 //                    LOGGER.error("close conn stream failure",e);
 //                }
 //            }
-            DatabaseHelper.closeConnection(conn);
-        }
+//            DatabaseHelper.closeConnection();
+//        }}
     }
 
     /***
@@ -89,8 +89,8 @@ public class CustomerService {
      * @param id
      * @return com.ztc.demo.chapter1.model.Customer
      *
-    **/
-    public Customer getCustomer(Long id){
+     **/
+    public Customer getCustomer(Long id) {
         return null;
     }
 
@@ -101,8 +101,8 @@ public class CustomerService {
      * @param fieldMap
      * @return boolean
      *
-    **/
-    public boolean createCustomer(Map<String,Object> fieldMap){
+     **/
+    public boolean createCustomer(Map<String, Object> fieldMap) {
         return false;
     }
 
@@ -115,7 +115,7 @@ public class CustomerService {
      * @return boolean
      *
      **/
-    public boolean editCustomer(long id,Map<String,Object> fieldMap){
+    public boolean editCustomer(long id, Map<String, Object> fieldMap) {
         return false;
     }
 
@@ -127,7 +127,7 @@ public class CustomerService {
      * @return boolean
      *
      **/
-    public boolean deleteCustomer(long id){
+    public boolean deleteCustomer(long id) {
         return false;
     }
 }

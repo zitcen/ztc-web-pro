@@ -28,6 +28,9 @@ public class DatabaseHelper {
     private static final String USERNAME;
     private static final String PASSWORD;
     private static final QueryRunner QUERY_RUNNER = new QueryRunner();
+    //保證綫程安全將數據庫鏈接信息保存到當前綫程下
+    private static final ThreadLocal<Connection> CONNECTION_HOLDER =
+            new ThreadLocal<Connection>();
 
     /**
      * 初始化數據庫鏈接信息
@@ -51,15 +54,22 @@ public class DatabaseHelper {
      * @Description 獲取數據庫鏈接的公共方法
      * @Date 2024/4/16
      * @return java.sql.Connection
-     *
+     * @Edit ztc 保證綫程安全的修改
     **/
     public static Connection getConnection(){
-        Connection conn = null;
-        try {
-            conn = DriverManager.getConnection(URL,USERNAME,PASSWORD);
-        } catch (SQLException e) {
-            LOGGER.error("get connection failure ", e);
+//        Connection conn = null;
+        Connection conn = CONNECTION_HOLDER.get();
+        if (Objects.isNull(conn)) {
+            try {
+                conn = DriverManager.getConnection(URL,USERNAME,PASSWORD);
+            } catch (SQLException e) {
+                LOGGER.error("get connection failure ", e);
+            }finally {
+                CONNECTION_HOLDER.set(conn);
+            }
         }
+
+
         return conn;
     }
 
@@ -69,27 +79,42 @@ public class DatabaseHelper {
      * @Date 2024/4/16
      *
      **/
-    public static void closeConnection(Connection conn){
+//    public static void closeConnection(Connection conn){
+    public static void closeConnection(){
+        Connection conn = CONNECTION_HOLDER.get();
         if (!Objects.isNull(conn)) {
             try {
                 conn.close();
             } catch (SQLException e) {
                 LOGGER.error("close conn stream failure",e);
+            }finally {
+                CONNECTION_HOLDER.remove();
             }
         }
     }
 
 
-    public static <T> List<T> queryEntityList(Connection conn,Class<T> entityClass,
+    /***
+     * @Author ztc
+     * @Description 使用apache的工具簡化列表查詢
+     * @Date 2024/4/16
+     * @param conn
+     * @param entityClass
+     * @param sql
+     * @param params
+     * @return java.util.List<T>
+     *
+    **/
+    public static <T> List<T> queryEntityList(Class<T> entityClass,
                                               String sql, Object... params){
         List<T> entityList;
         try {
-            entityList = QUERY_RUNNER.query(conn,sql,new BeanListHandler<T>(entityClass),params);
+            entityList = QUERY_RUNNER.query(sql,new BeanListHandler<T>(entityClass),params);
         } catch (SQLException e) {
             LOGGER.error("query entity list failure", e);
             throw new RuntimeException(e);
         } finally {
-            closeConnection(conn);
+            closeConnection();
         }
         return entityList;
     }
