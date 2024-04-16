@@ -1,5 +1,6 @@
 package com.ztc.demo.chapter1.service;
 
+import com.ztc.demo.chapter1.helper.DatabaseHelper;
 import com.ztc.demo.chapter1.model.Customer;
 import com.ztc.demo.chapter1.utils.PropsUtil;
 import org.slf4j.Logger;
@@ -16,27 +17,27 @@ import java.util.*;
  */
 public class CustomerService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CustomerService.class);
-    private static final String DRIVER;
-    private static final String URL;
-    private static final String USERNAME;
-    private static final String PASSWORD;
-
-    /**
-     * 初始化數據庫鏈接信息
-     */
-    static {
-        Properties props = PropsUtil.loadProps("jdbcConfig.properties");
-        DRIVER = props.getProperty("jdbc.driver");
-        URL = props.getProperty("jdbc.url");
-        USERNAME = props.getProperty("jdbc.username");
-        PASSWORD = props.getProperty("jdbc.password");
-
-        try {
-            Class.forName(DRIVER);
-        } catch (ClassNotFoundException e) {
-            LOGGER.error("can not load driver", e);
-        }
-    }
+//    private static final String DRIVER;
+//    private static final String URL;
+//    private static final String USERNAME;
+//    private static final String PASSWORD;
+//
+//    /**
+//     * 初始化數據庫鏈接信息
+//     */
+//    static {
+//        Properties props = PropsUtil.loadProps("jdbcConfig.properties");
+//        DRIVER = props.getProperty("jdbc.driver");
+//        URL = props.getProperty("jdbc.url");
+//        USERNAME = props.getProperty("jdbc.username");
+//        PASSWORD = props.getProperty("jdbc.password");
+//
+//        try {
+//            Class.forName(DRIVER);
+//        } catch (ClassNotFoundException e) {
+//            LOGGER.error("can not load driver", e);
+//        }
+//    }
 
 
     /***
@@ -51,7 +52,7 @@ public class CustomerService {
         try {
             List<Customer> customers = new ArrayList<>();
             String sql = "select * from customer;";
-            conn = DriverManager.getConnection(URL,USERNAME,PASSWORD);
+            conn = DatabaseHelper.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -69,13 +70,14 @@ public class CustomerService {
             LOGGER.error("execute sql failure",e);
             return null;
         } finally {
-            if (!Objects.isNull(conn)) {
-                try {
-                    conn.close();
-                } catch (SQLException e) {
-                    LOGGER.error("close conn stream failure",e);
-                }
-            }
+//            if (!Objects.isNull(conn)) {
+//                try {
+//                    conn.close();
+//                } catch (SQLException e) {
+//                    LOGGER.error("close conn stream failure",e);
+//                }
+//            }
+            DatabaseHelper.closeConnection(conn);
         }
     }
 
