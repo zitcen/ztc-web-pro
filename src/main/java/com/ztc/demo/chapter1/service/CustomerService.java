@@ -1,9 +1,12 @@
 package com.ztc.demo.chapter1.service;
 
 import com.ztc.demo.chapter1.model.Customer;
+import com.ztc.demo.chapter1.utils.PropsUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Map;
+import java.sql.*;
+import java.util.*;
 
 /**
  * @ClassName CustomerService
@@ -12,6 +15,30 @@ import java.util.Map;
  * @Date 2024/4/15 17:42
  */
 public class CustomerService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CustomerService.class);
+    private static final String DRIVER;
+    private static final String URL;
+    private static final String USERNAME;
+    private static final String PASSWORD;
+
+    /**
+     * 初始化數據庫鏈接信息
+     */
+    static {
+        Properties props = PropsUtil.loadProps("jdbcConfig.properties");
+        DRIVER = props.getProperty("jdbc.driver");
+        URL = props.getProperty("jdbc.url");
+        USERNAME = props.getProperty("jdbc.username");
+        PASSWORD = props.getProperty("jdbc.password");
+
+        try {
+            Class.forName(DRIVER);
+        } catch (ClassNotFoundException e) {
+            LOGGER.error("can not load driver", e);
+        }
+    }
+
+
     /***
      * @Author ztc
      * @Description 獲取客戶數據列表
@@ -20,7 +47,36 @@ public class CustomerService {
      *
     **/
     public List<Customer> getCustomerList(){
-        return null;
+        Connection conn = null;
+        try {
+            List<Customer> customers = new ArrayList<>();
+            String sql = "select * from customer;";
+            conn = DriverManager.getConnection(URL,USERNAME,PASSWORD);
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Customer customer = new Customer();
+                customer.setId(rs.getLong("id"));
+                customer.setName(rs.getString("name"));
+                customer.setContact(rs.getString("contact"));
+                customer.setTelephone(rs.getString("telephone"));
+                customer.setEmail(rs.getString("email"));
+                customer.setRemark(rs.getString("remark"));
+                customers.add(customer);
+            }
+            return customers;
+        } catch (Exception e) {
+            LOGGER.error("execute sql failure",e);
+            return null;
+        } finally {
+            if (!Objects.isNull(conn)) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    LOGGER.error("close conn stream failure",e);
+                }
+            }
+        }
     }
 
     /***
