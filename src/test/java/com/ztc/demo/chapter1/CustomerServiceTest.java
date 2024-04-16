@@ -40,6 +40,9 @@ public class CustomerServiceTest {
     @Test
     public void getCustomerListTest() {
         List<Customer> customerList = customerService.getCustomerList();
+        for (Customer customer : customerList) {
+            System.out.println(customer.toString());
+        }
         Assert.assertEquals(2, customerList.size());
     }
 

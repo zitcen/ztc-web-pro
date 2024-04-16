@@ -50,21 +50,22 @@ public class CustomerService {
     public List<Customer> getCustomerList(){
         Connection conn = null;
         try {
-            List<Customer> customers = new ArrayList<>();
+//            List<Customer> customers = new ArrayList<>();
             String sql = "select * from customer;";
             conn = DatabaseHelper.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                Customer customer = new Customer();
-                customer.setId(rs.getLong("id"));
-                customer.setName(rs.getString("name"));
-                customer.setContact(rs.getString("contact"));
-                customer.setTelephone(rs.getString("telephone"));
-                customer.setEmail(rs.getString("email"));
-                customer.setRemark(rs.getString("remark"));
-                customers.add(customer);
-            }
+//            ResultSet rs = ps.executeQuery();
+//            while (rs.next()) {
+//                Customer customer = new Customer();
+//                customer.setId(rs.getLong("id"));
+//                customer.setName(rs.getString("name"));
+//                customer.setContact(rs.getString("contact"));
+//                customer.setTelephone(rs.getString("telephone"));
+//                customer.setEmail(rs.getString("email"));
+//                customer.setRemark(rs.getString("remark"));
+//                customers.add(customer);
+//            }
+            List<Customer> customers = DatabaseHelper.queryEntityList(conn, Customer.class, sql);
             return customers;
         } catch (Exception e) {
             LOGGER.error("execute sql failure",e);
