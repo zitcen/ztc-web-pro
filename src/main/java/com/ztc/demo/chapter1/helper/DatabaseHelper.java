@@ -109,7 +109,7 @@ public class DatabaseHelper {
                                               String sql, Object... params){
         List<T> entityList;
         try {
-            entityList = QUERY_RUNNER.query(sql,new BeanListHandler<T>(entityClass),params);
+            entityList = QUERY_RUNNER.query(getConnection(),sql,new BeanListHandler<T>(entityClass),params);
         } catch (SQLException e) {
             LOGGER.error("query entity list failure", e);
             throw new RuntimeException(e);
