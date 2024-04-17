@@ -1,8 +1,11 @@
 package com.ztc.demo.chapter1.helper;
 
+import com.ztc.demo.chapter1.model.Customer;
 import com.ztc.demo.chapter1.service.CustomerService;
 import com.ztc.demo.chapter1.utils.PropsUtil;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,9 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * @ClassName DatabaseHelper
@@ -98,7 +99,6 @@ public class DatabaseHelper {
      * @Author ztc
      * @Description 使用apache的工具簡化列表查詢
      * @Date 2024/4/16
-     * @param conn
      * @param entityClass
      * @param sql
      * @param params
@@ -109,7 +109,8 @@ public class DatabaseHelper {
                                               String sql, Object... params){
         List<T> entityList;
         try {
-            entityList = QUERY_RUNNER.query(getConnection(),sql,new BeanListHandler<T>(entityClass),params);
+            entityList = QUERY_RUNNER.query(getConnection(),sql,
+                    new BeanListHandler<T>(entityClass),params);
         } catch (SQLException e) {
             LOGGER.error("query entity list failure", e);
             throw new RuntimeException(e);
@@ -117,5 +118,134 @@ public class DatabaseHelper {
             closeConnection();
         }
         return entityList;
+    }
+
+    /***
+     * @Author ztc
+     * @Description 使用apache的工具簡化實例查詢
+     * @Date 2024/4/16
+     * @param entityClass
+     * @param sql
+     * @param params
+     * @return java.util.List<T>
+     *
+     **/
+    public static <T> T queryEntity(Class<T> entityClass,String sql, Object... params){
+        T entity;
+        try {
+            entity = QUERY_RUNNER.query(getConnection(),sql,
+                    new BeanHandler<T>(entityClass),params);
+        } catch (SQLException e) {
+            LOGGER.error("query entity failure", e);
+            throw new RuntimeException(e);
+        } finally {
+            closeConnection();
+        }
+        return entity;
+    }
+
+    /***
+     * @Author ztc
+     * @Description 执行更新语句（insert, update, insert）
+     * @Date 2024/4/17
+     * @param sql
+     * @param params 
+     * @return int
+     * 
+    **/
+    public static int executeUpdate(String sql, Object... params){
+        int rows = 0;
+        try {
+            rows = QUERY_RUNNER.update(getConnection(),sql,params);
+        } catch (SQLException e) {
+            LOGGER.error("query entity failure", e);
+            throw new RuntimeException(e);
+        } finally {
+            closeConnection();
+        }
+        return rows;
+    }
+
+
+    /***
+     * @Author ztc
+     * @Description 通用插入操作
+     * @Date 2024/4/17
+     * @param entityClass
+     * @param fieldMap
+     * @return boolean
+     *
+    **/
+    public static <T> boolean insertEntity(Class<T> entityClass,
+                                           Map<String,Object> fieldMap){
+        if (fieldMap.isEmpty()) {
+            LOGGER.error("can not insert entity : fieldMap is null");
+            return false;
+        }
+        StringBuilder sql = new StringBuilder("INSERT INTO ").append(getTableName(entityClass)) ;
+
+        StringBuilder columns = new StringBuilder("(");
+        StringBuilder values = new StringBuilder("(");
+        for (String fieldName : fieldMap.keySet()) {
+            columns.append(fieldName).append(", ");
+            values.append("?, ");
+        }
+        columns.replace(columns.lastIndexOf(","),columns.length(),")");
+        values.replace(values.lastIndexOf(","),values.length(),")");
+        sql.append(columns).append("VALUES ").append(values) ;
+
+        Object[] params = fieldMap.values().toArray();
+        return executeUpdate(sql.toString(),params) == 1;
+
+    }
+
+    /***
+     * @Author ztc
+     * @Description 通用修改实体的方法
+     * @Date 2024/4/17
+     * @param entity
+     * @param id
+     * @param fieldMap
+     * @return boolean
+     *
+    **/
+    public static <T> boolean updateEntity(Class<T> entity,long id, Map<String,Object> fieldMap){
+        if (fieldMap.isEmpty()) {
+            LOGGER.error("can not update entity : fieldMap is null");
+            return false;
+        }
+        StringBuilder sql = new StringBuilder("UPDATE ").append(getTableName(Customer.class));
+        sql.append(" set ");
+        for (String fieldName : fieldMap.keySet()) {
+            sql.append(fieldName).append("= ?,");
+        }
+        sql.replace(sql.lastIndexOf(","),sql.length()," ");
+        sql.append("where id = ?;");
+        List<Object> paramList = new ArrayList<>();
+        paramList.addAll(fieldMap.values());
+        paramList.add(id);
+        Object[] params = paramList.toArray();
+        return executeUpdate(sql.toString(), params) == 1;
+    }
+
+
+    /***
+     * @Author ztc
+     * @Description 通用根据id删除实体
+     * @Date 2024/4/17
+     * @param id
+     * @return boolean
+     *
+    **/
+    public static <T> boolean delEntity(long id){
+
+        StringBuilder sql = new StringBuilder("DELETE FROM ").
+                append(getTableName(Customer.class)).append(" where id =?;");
+        return executeUpdate(sql.toString(), id) == 1;
+    }
+
+    private static String getTableName(Class<?> entityClass){
+        return entityClass.getSimpleName();
+
     }
 }

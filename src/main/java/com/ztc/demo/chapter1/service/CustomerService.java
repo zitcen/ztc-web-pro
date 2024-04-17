@@ -91,7 +91,9 @@ public class CustomerService {
      *
      **/
     public Customer getCustomer(Long id) {
-        return null;
+        String sql = "select * from customer where id = ?;";
+        Customer customer = DatabaseHelper.queryEntity(Customer.class, sql, id);
+        return customer;
     }
 
     /***
@@ -103,7 +105,8 @@ public class CustomerService {
      *
      **/
     public boolean createCustomer(Map<String, Object> fieldMap) {
-        return false;
+        boolean b = DatabaseHelper.insertEntity(Customer.class, fieldMap);
+        return b;
     }
 
     /***
@@ -116,7 +119,7 @@ public class CustomerService {
      *
      **/
     public boolean editCustomer(long id, Map<String, Object> fieldMap) {
-        return false;
+        return DatabaseHelper.updateEntity(Customer.class,id,fieldMap);
     }
 
     /***
@@ -128,6 +131,7 @@ public class CustomerService {
      *
      **/
     public boolean deleteCustomer(long id) {
-        return false;
+
+        return DatabaseHelper.delEntity(id);
     }
 }
