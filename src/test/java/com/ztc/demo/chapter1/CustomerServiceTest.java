@@ -1,11 +1,16 @@
 package com.ztc.demo.chapter1;
 
+import com.ztc.demo.chapter1.helper.DatabaseHelper;
 import com.ztc.demo.chapter1.model.Customer;
 import com.ztc.demo.chapter1.service.CustomerService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,9 +37,14 @@ public class CustomerServiceTest {
      *
      **/
     @Before
-    public void initDb() {
-
-        //TODO 初始化數據庫
+    public void initDb() throws IOException {
+        String file = "sql/customer_init.sql";
+        InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(file);
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
+        String sql;
+        while ((sql = bufferedReader.readLine()) != null){
+            DatabaseHelper.executeUpdate(sql);
+        }
     }
 
     @Test

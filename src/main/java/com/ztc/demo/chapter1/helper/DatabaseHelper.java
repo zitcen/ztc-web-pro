@@ -4,6 +4,7 @@ import com.ztc.demo.chapter1.model.Customer;
 import com.ztc.demo.chapter1.service.CustomerService;
 import com.ztc.demo.chapter1.utils.PropsUtil;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
@@ -28,26 +29,36 @@ public class DatabaseHelper {
     private static final String URL;
     private static final String USERNAME;
     private static final String PASSWORD;
-    private static final QueryRunner QUERY_RUNNER = new QueryRunner();
+    private static final QueryRunner QUERY_RUNNER;
     //保證綫程安全將數據庫鏈接信息保存到當前綫程下
-    private static final ThreadLocal<Connection> CONNECTION_HOLDER =
-            new ThreadLocal<Connection>();
+    private static final ThreadLocal<Connection> CONNECTION_HOLDER;
+    //數據庫連接池
+    private static final BasicDataSource DATA_SOURCE;
 
     /**
      * 初始化數據庫鏈接信息
      */
     static {
+        CONNECTION_HOLDER = new ThreadLocal<Connection>();
+        QUERY_RUNNER = new QueryRunner();
         Properties props = PropsUtil.loadProps("jdbcConfig.properties");
         DRIVER = props.getProperty("jdbc.driver");
         URL = props.getProperty("jdbc.url");
         USERNAME = props.getProperty("jdbc.username");
         PASSWORD = props.getProperty("jdbc.password");
+        DATA_SOURCE = new BasicDataSource();
+        DATA_SOURCE.setDriverClassName(DRIVER);
+        DATA_SOURCE.setUrl(URL);
+        DATA_SOURCE.setUsername(USERNAME);
+        DATA_SOURCE.setPassword(PASSWORD);
 
-        try {
-            Class.forName(DRIVER);
-        } catch (ClassNotFoundException e) {
-            LOGGER.error("can not load jdbc driver", e);
-        }
+
+
+//        try {
+//            Class.forName(DRIVER);
+//        } catch (ClassNotFoundException e) {
+//            LOGGER.error("can not load jdbc driver", e);
+//        }
     }
 
     /***
@@ -62,7 +73,8 @@ public class DatabaseHelper {
         Connection conn = CONNECTION_HOLDER.get();
         if (Objects.isNull(conn)) {
             try {
-                conn = DriverManager.getConnection(URL,USERNAME,PASSWORD);
+//                conn = DriverManager.getConnection(URL,USERNAME,PASSWORD);
+                conn = DATA_SOURCE.getConnection();
             } catch (SQLException e) {
                 LOGGER.error("get connection failure ", e);
             }finally {
@@ -81,18 +93,18 @@ public class DatabaseHelper {
      *
      **/
 //    public static void closeConnection(Connection conn){
-    public static void closeConnection(){
-        Connection conn = CONNECTION_HOLDER.get();
-        if (!Objects.isNull(conn)) {
-            try {
-                conn.close();
-            } catch (SQLException e) {
-                LOGGER.error("close conn stream failure",e);
-            }finally {
-                CONNECTION_HOLDER.remove();
-            }
-        }
-    }
+//    public static void closeConnection(){
+//        Connection conn = CONNECTION_HOLDER.get();
+//        if (!Objects.isNull(conn)) {
+//            try {
+//                conn.close();
+//            } catch (SQLException e) {
+//                LOGGER.error("close conn stream failure",e);
+//            }finally {
+//                CONNECTION_HOLDER.remove();
+//            }
+//        }
+//    }
 
 
     /***
@@ -114,9 +126,10 @@ public class DatabaseHelper {
         } catch (SQLException e) {
             LOGGER.error("query entity list failure", e);
             throw new RuntimeException(e);
-        } finally {
-            closeConnection();
         }
+//        finally {
+//            closeConnection();
+//        }
         return entityList;
     }
 
@@ -138,9 +151,10 @@ public class DatabaseHelper {
         } catch (SQLException e) {
             LOGGER.error("query entity failure", e);
             throw new RuntimeException(e);
-        } finally {
-            closeConnection();
         }
+//        finally {
+//            closeConnection();
+//        }
         return entity;
     }
 
@@ -160,9 +174,10 @@ public class DatabaseHelper {
         } catch (SQLException e) {
             LOGGER.error("query entity failure", e);
             throw new RuntimeException(e);
-        } finally {
-            closeConnection();
         }
+//        finally {
+//            closeConnection();
+//        }
         return rows;
     }
 
