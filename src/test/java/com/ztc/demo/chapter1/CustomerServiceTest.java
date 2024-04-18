@@ -38,13 +38,7 @@ public class CustomerServiceTest {
      **/
     @Before
     public void initDb() throws IOException {
-        String file = "sql/customer_init.sql";
-        InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(file);
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
-        String sql;
-        while ((sql = bufferedReader.readLine()) != null){
-            DatabaseHelper.executeUpdate(sql);
-        }
+        DatabaseHelper.executeSqlFile("sql/customer_init.sql");
     }
 
     @Test

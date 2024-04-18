@@ -11,6 +11,10 @@ import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -262,5 +266,19 @@ public class DatabaseHelper {
     private static String getTableName(Class<?> entityClass){
         return entityClass.getSimpleName();
 
+    }
+
+    public static void executeSqlFile(String filePath)  {
+        InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(filePath);
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
+        try {
+            String sql;
+            while ((sql = bufferedReader.readLine()) != null){
+                DatabaseHelper.executeUpdate(sql);
+            }
+        } catch (IOException e) {
+            LOGGER.error("execute sql file failure",e);
+            throw new RuntimeException(e);
+        }
     }
 }
